@@ -54,9 +54,11 @@ public class MainActivity extends LifecycleLoggingActivity {
         // Always call super class for necessary
         // initialization/implementation.
         // @@ TODO -- you fill in here.
+        super.onCreate(savedInstanceState);
 
         // Set the default layout.
         // @@ TODO -- you fill in here.
+        setContentView(R.layout.main_activity);
 
         // Cache the EditText that holds the urls entered by the user
         // (if any).
