@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -29,6 +30,9 @@ public class MainActivity extends LifecycleLoggingActivity {
      * image.
      */
     private static final int DOWNLOAD_IMAGE_REQUEST = 1;
+
+    private static final String REQUEST_URL = "request-url";
+    private static final String DOWNLOAD_PATH = "download-path";
 
     /**
      * EditText field for entering the desired URL to an image.
@@ -63,6 +67,8 @@ public class MainActivity extends LifecycleLoggingActivity {
         // Cache the EditText that holds the urls entered by the user
         // (if any).
         // @@ TODO -- you fill in here.
+        mUrlEditText = (EditText) findViewById(R.id.url);
+        mUrlEditText.setText(mDefaultUrl.toString());
     }
 
     /**
@@ -83,12 +89,15 @@ public class MainActivity extends LifecycleLoggingActivity {
             // it's an Intent that's implemented by the
             // DownloadImageActivity.
             // @@ TODO - you fill in here.
+            Intent downloadIntent = makeDownloadImageIntent(
+                    Uri.parse(mUrlEditText.getText().toString()));
 
             // Start the Activity associated with the Intent, which
             // will download the image and then return the Uri for the
             // downloaded image file via the onActivityResult() hook
             // method.
             // @@ TODO -- you fill in here.
+            startActivityForResult(downloadIntent, DOWNLOAD_IMAGE_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -107,19 +116,24 @@ public class MainActivity extends LifecycleLoggingActivity {
         // Check if the started Activity completed successfully.
         // @@ TODO -- you fill in here, replacing true with the right
         // code.
-        if (true) {
+        if (requestCode == DOWNLOAD_IMAGE_REQUEST) {
             // Check if the request code is what we're expecting.
             // @@ TODO -- you fill in here, replacing true with the
             // right code.
-            if (true) {
+            if (resultCode == RESULT_OK) {
                 // Call the makeGalleryIntent() factory method to
                 // create an Intent that will launch the "Gallery" app
                 // by passing in the path to the downloaded image
                 // file.
                 // @@ TODO -- you fill in here.
 
+                Intent galleryIntent = makeGalleryIntent(getPathToDownloadedImage(data));
+
                 // Start the Gallery Activity.
                 // @@ TODO -- you fill in here.
+                if (galleryIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(galleryIntent);
+                }
             }
         }
         // Check if the started Activity did not complete successfully
@@ -128,8 +142,15 @@ public class MainActivity extends LifecycleLoggingActivity {
         // @@ TODO -- you fill in here, replacing true with the right
         // code.
         else if (true) {
+            Toast.makeText(this, "Unable to download image!", Toast.LENGTH_SHORT).show();
         }
-    }    
+    }
+
+    private String getPathToDownloadedImage(Intent data) {
+        if (data == null) return null;
+        return data.getStringExtra(DOWNLOAD_PATH);
+    }
+
 
     /**
      * Factory method that returns an implicit Intent for viewing the
@@ -140,7 +161,10 @@ public class MainActivity extends LifecycleLoggingActivity {
         // the image.
     	// TODO -- you fill in here, replacing "null" with the proper
     	// code.
-        return null;
+
+        Intent openGalleryIntent = new Intent(Intent.ACTION_VIEW);
+        openGalleryIntent.setDataAndType(Uri.parse(pathToImageFile), "image/*");
+        return openGalleryIntent;
     }
 
     /**
@@ -151,7 +175,9 @@ public class MainActivity extends LifecycleLoggingActivity {
         // Create an intent that will download the image from the web.
     	// TODO -- you fill in here, replacing "null" with the proper
     	// code.
-        return null;
+        Intent downloadIntent = new Intent(this, DownloadImageActivity.class);
+        downloadIntent.putExtra(REQUEST_URL, url);
+        return downloadIntent;
     }
 
     /**
